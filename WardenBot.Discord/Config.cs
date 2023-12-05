@@ -8,7 +8,7 @@ namespace WardenBot.Discord
     public static class Config
     {
         private static bool _loadedEnv = false;
-        
+
         private static string Required([CallerMemberName] string fieldName = "")
         {
             return Environment.GetEnvironmentVariable(fieldName)
@@ -25,9 +25,9 @@ namespace WardenBot.Discord
         public static bool Validate(out List<string> missingVariables)
         {
             LoadEnv();
-            
+
             missingVariables = new();
-            
+
             PropertyInfo[] propertyInfos = typeof(Config)
                 .GetProperties(BindingFlags.Public | BindingFlags.Static);
             foreach (PropertyInfo propertyInfo in propertyInfos)
@@ -47,7 +47,7 @@ namespace WardenBot.Discord
         public static void LoadEnv()
         {
             if (_loadedEnv) { return; }
-            
+
             string? filename = Environment.GetEnvironmentVariable("LOAD_ENV");
             if (string.IsNullOrWhiteSpace(filename)) { return; }
 
@@ -85,7 +85,17 @@ namespace WardenBot.Discord
         [Required]
         public static string OAUTH_PERMISSIONS => Required();
 
-        [Required]
-        public static string OAUTH_REDIRECT_URI => Required();
+        public static string GenerateOAuthUri(string? guildId = null)
+        {
+            string regularUri = $"{Config.OAUTH_URI}?client_id={Config.CLIENT_ID}&scope={Config.OAUTH_SCOPE}&permissions={Config.OAUTH_PERMISSIONS}";
+
+            if (!string.IsNullOrWhiteSpace(guildId))
+            {
+                return $"{regularUri}&guild_id={guildId}&disable_guild_select=true";
+            }
+
+            return regularUri;
+
+        }
     }
 }
